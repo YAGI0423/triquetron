@@ -130,3 +130,5 @@ dmypy.json
 
 #personal
 ignore/
+triquetron.py
+example.py
