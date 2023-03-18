@@ -1,4 +1,4 @@
-<br><img src='./readme_figure/title.png'>
+
 
 <br><br>
 
