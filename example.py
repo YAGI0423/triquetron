@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from triquetron import Linear, OneWeightLinear
+from triquetron import FCLinear, OneWeightLinear
 
 from torch.utils.data import DataLoader
 from logicGateDataset.datasets import AndGate, OrGate, XorGate, NotGate
@@ -22,13 +22,13 @@ class TriModel(nn.Module):
 
 
 if __name__ == '__main__':
-    dataset = XorGate(dataset_size=20000)
-    dataLoader = DataLoader(dataset, batch_size=4, shuffle=True)
+    dataset = XorGate(dataset_size=5000)
+    dataLoader = DataLoader(dataset, batch_size=1, shuffle=True)
 
     model = TriModel()
 
     cri = nn.MSELoss()
-    optim = torch.optim.Adam(model.parameters(), lr=0.003)
+    optim = torch.optim.Adam(model.parameters(), lr=0.03)
 
     losses = list()
     for x, y in dataLoader:

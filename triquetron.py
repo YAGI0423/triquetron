@@ -43,6 +43,7 @@ class FCLinear(Module):
             init.uniform_(bias, -bound, bound)
 
         init.kaiming_uniform_(self.BD_weight, a=math.sqrt(5))
+        init.kaiming_uniform_(self.RE_weight, a=math.sqrt(5))
         if self.BD_bias is not None:
             init_bias(self.BD_weight, self.BD_bias)
             init_bias(self.RE_weight, self.RE_bias)
@@ -70,15 +71,17 @@ class OneWeightLinear(Module):
     def __init__(self, in_features: int, out_features: int, bias: bool = True,
                  device=None, dtype=None) -> None:
         factory_kwargs = {'device': device, 'dtype': dtype}
+        BD_SIZE = 2 #Birth & Death
         super(OneWeightLinear, self).__init__()
 
         self.in_features = in_features
         self.out_features = out_features
 
         self.BD_weight = Parameter(torch.empty((out_features, in_features), **factory_kwargs))
-        self.RE_weight = Parameter(torch.empty((out_features, 2), **factory_kwargs))
+        self.RE_weight = Parameter(torch.empty((out_features, BD_SIZE), **factory_kwargs))
         if bias:
-            self.BD_bias = Parameter(torch.empty((2, 1, out_features), **factory_kwargs)) #2(Birth, Death) x Batch x out_feature
+            #2(Birth, Death) x Batch x out_feature
+            self.BD_bias = Parameter(torch.empty((BD_SIZE, 1, out_features), **factory_kwargs))
             self.RE_bias = Parameter(torch.empty(out_features, **factory_kwargs))
         else:
             self.register_parameter('BD_bias', None)
@@ -92,18 +95,19 @@ class OneWeightLinear(Module):
             init.uniform_(bias, -bound, bound)
 
         init.kaiming_uniform_(self.BD_weight, a=math.sqrt(5))
+        init.kaiming_uniform_(self.RE_weight, a=math.sqrt(5))
         if self.BD_bias is not None:
             init_bias(self.BD_weight, self.BD_bias)
             init_bias(self.RE_weight, self.RE_bias)
 
     def forward(self, input: Tensor) -> Tensor:
+        print(self.BD_weight)
+        raise
         out = F.linear(input, self.BD_weight) #Batch x out_feature
-        out = torch.add(out, self.BD_bias) #2(BD) x Batch x out_feature
-        out = out.permute(1, 2, 0) #Batch x out_feature x 2(BD)
-
-        out = out.view(-1, self.out_features, 2) #Batch x out_feature x 2(DB)
-        o1 = F.leaky_relu(out, negative_slope=0.01)
+        out = torch.add(out, self.BD_bias) #BD(default=2) x Batch x out_feature
+        out = out.permute(1, 2, 0) #Batch x out_feature x BD
+        o1 = F.leaky_relu(out, negative_slope=0.01) #Batch x out_feature x BD
 
         out = torch.mul(o1, self.RE_weight).sum(dim=2) #Batch x out_feature
         o2 = torch.add(out, self.RE_bias) #Batch x out_feature
-        return o2   
+        return o2
