@@ -131,5 +131,5 @@ dmypy.json
 #personal
 ignore/
 readme_figure/
-triquetron.py
-example.py
+.triquetron.py
+.example.py
