@@ -27,7 +27,6 @@ TEXT
 ### Example
 ```python
 $ CODE
-
 ```
 ***
 <br><br>
